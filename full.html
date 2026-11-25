@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>胸腔ドレーン挿入 れんしゅうアプリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3B332E; --bg:#FFF6E9; --panel:#FFFFFF;
+    --teal:#0F7E8C; --teal-soft:#E2F4F6;
+    --coral:#FF7A66; --coral-soft:#FFE9E4;
+    --sun:#FFC53D; --leaf:#2FA84F; --leaf-soft:#E4F6E9;
+    --sky:#57B7E8; --lung:#FF9D9D; --lung-line:#E05B5B;
+    --skin:#FFE0BD; --bone:#FFF1D6; --bone-line:#C9A86A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
+    background:var(--bg); color:var(--ink);
+    font-weight:500; line-height:1.5;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 12px 40px;}
+  header{
+    background:var(--coral); color:#fff;
+    padding:16px 14px 12px; text-align:center;
+    border-bottom:4px solid var(--ink);
+  }
+  header h1{margin:0; font-size:24px; font-weight:900; letter-spacing:.02em;}
+  header p{margin:4px 0 0; font-size:13px; font-weight:700;}
+  nav.tabs{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+    padding:12px 8px 4px;
+  }
+  nav.tabs button{
+    font-family:inherit; font-weight:900; font-size:16px;
+    padding:9px 16px; border-radius:999px; cursor:pointer;
+    background:#fff; color:var(--ink); border:3px solid var(--ink);
+  }
+  nav.tabs button.active{background:var(--teal); color:#fff;}
+  section.tab{display:none; padding-top:10px;}
+  section.tab.active{display:block;}
+  .panel{
+    background:var(--panel); border:3px solid var(--ink); border-radius:20px;
+    padding:12px; margin-bottom:12px;
+  }
+  .panel h2{margin:2px 0 8px; font-size:19px; font-weight:900;}
+  .lead{font-size:14px; margin:0 0 10px;}
+  .row{display:flex; gap:10px;}
+  .row > *{min-width:0;}
+  .btn{
+    font-family:inherit; font-weight:900; font-size:16px; cursor:pointer;
+    border:3px solid var(--ink); border-radius:14px; padding:10px 18px;
+    background:var(--sun); color:var(--ink);
+  }
+  .btn.sub{background:#fff;}
+  .btn.teal{background:var(--teal); color:#fff;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .seg{display:flex; gap:8px; flex-wrap:wrap;}
+  .seg button{
+    font-family:inherit; font-weight:900; font-size:15px; cursor:pointer;
+    border:3px solid var(--ink); border-radius:999px; padding:8px 16px; background:#fff; color:var(--ink);
+  }
+  .seg button.active{background:var(--coral); color:#fff;}
+  .seg button.active.blue{background:var(--sky); color:#fff;}
+  .controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0;}
+  .controls .spacer{flex:1;}
+  .msg{
+    border:3px solid var(--ink); border-radius:16px; background:#FFF9EC;
+    padding:10px 14px; font-size:16px; font-weight:700; min-height:52px;
+    display:flex; align-items:center;
+  }
+  .msg.good{background:var(--leaf-soft);}
+  .msg.bad{background:var(--coral-soft);}
+  .bubble{border:3px solid var(--ink); border-radius:16px; padding:8px 12px 10px; margin-bottom:10px; background:#fff;}
+  .bubble .who{
+    display:inline-block; font-size:12px; font-weight:900; color:#fff;
+    border-radius:999px; padding:2px 10px; margin-bottom:4px;
+  }
+  .bubble.op{background:var(--teal-soft);} .bubble.op .who{background:var(--teal);}
+  .bubble.as{background:var(--coral-soft);} .bubble.as .who{background:var(--coral);}
+  .bubble p{margin:0; font-size:16px; font-weight:700;}
+  svg{display:block; width:100%; height:auto;}
+  svg text{font-family:inherit; font-weight:700; fill:var(--ink);}
+  .zone{fill:rgba(255,255,255,.35); stroke:rgba(59,51,46,.45); stroke-width:2; cursor:pointer;}
+  .zone:active{fill:rgba(255,197,61,.5);}
+  .zone.correct{fill:rgba(47,168,79,.55); stroke:var(--leaf); stroke-width:3;}
+  .zone.wrong{fill:rgba(255,122,102,.55); stroke:var(--coral); stroke-width:3;}
+  .zone.pulse{animation:pulse 0.8s ease-in-out infinite alternate;}
+  @keyframes pulse{from{stroke-width:3;} to{stroke-width:6;}}
+  .choices{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
+  .choices button{
+    font-family:inherit; font-size:16px; font-weight:700; text-align:left;
+    background:#fff; border:3px solid var(--ink); border-radius:14px;
+    padding:12px 14px; cursor:pointer; color:var(--ink);
+  }
+  .choices button.correct{background:var(--leaf-soft); border-color:var(--leaf);}
+  .choices button.wrong{background:var(--coral-soft); border-color:var(--coral);}
+  .choices button:disabled{cursor:default; opacity:.85;}
+  .qhead{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .qnum{font-weight:900; font-size:15px; background:var(--ink); color:#fff; border-radius:999px; padding:3px 12px;}
+  .tag{font-size:12px; font-weight:900; border:2px solid var(--ink); border-radius:999px; padding:2px 10px; background:var(--sun);}
+  .tag.nurse{background:var(--coral-soft);}
+  .tag.doc{background:var(--teal-soft);}
+  .qtext{font-size:19px; font-weight:900; margin:8px 0 2px;}
+  .dots{display:flex; gap:6px; justify-content:center; margin:10px 0 2px;}
+  .dots i{width:12px; height:12px; border-radius:50%; border:2px solid var(--ink); background:#fff; display:block;}
+  .dots i.done{background:var(--sun);}
+  .dots i.now{background:var(--coral);}
+  .score{font-size:26px; font-weight:900; text-align:center; margin:10px 0;}
+  .center{text-align:center;}
+  footer{font-size:11px; color:#8a7d72; text-align:center; padding:6px 10px 0;}
+  .small{font-size:12px; color:#6d6157;}
+  @media (max-width:520px){
+    header h1{font-size:21px;}
+    .row.stack{flex-direction:column;}
+    .qtext{font-size:17px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>胸腔ドレーン挿入 れんしゅう</h1>
+  <p>研修医（術者）と、介助につく看護師のための練習アプリ</p>
+</header>
+<div class="wrap">
+  <nav class="tabs">
+    <button data-tab="shikumi" class="active">しくみ</button>
+    <button data-tab="basho">ばしょ</button>
+    <button data-tab="tejun">てじゅん</button>
+    <button data-tab="quiz">かんさつクイズ</button>
+  </nav>
+
+  <!-- ============ タブ1: しくみ ============ -->
+  <section id="tab-shikumi" class="tab active">
+    <div class="controls">
+      <div class="seg" id="modeSeg">
+        <button data-mode="air" class="active">気胸（空気）</button>
+        <button data-mode="fluid">胸水（液体）</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="seg" id="speedSeg">
+        <button data-speed="0.5">0.5倍</button>
+        <button data-speed="1" class="active blue">1倍</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <div style="flex:1.25">
+          <svg id="chestSvg" viewBox="0 0 340 300" role="img" aria-label="胸の断面図">
+            <!-- 胸郭 -->
+            <path d="M62,26 Q160,4 246,22 Q296,34 294,110 Q293,180 282,214 Q190,246 96,222 Q58,208 56,120 Q55,55 62,26 Z"
+                  fill="#FFE0BD" stroke="#3B332E" stroke-width="3"/>
+            <!-- 胸腔内 -->
+            <path d="M78,42 Q160,22 236,36 Q278,46 277,112 Q276,172 267,202 Q188,228 108,208 Q74,196 73,120 Q72,66 78,42 Z"
+                  fill="#F2FBFF"/>
+            <!-- 横隔膜 -->
+            <path d="M84,206 Q180,176 268,200 Q262,224 190,232 Q110,232 84,206 Z" fill="#F6C177" stroke="#C98F3D" stroke-width="2"/>
+            <text x="150" y="252" font-size="11">横隔膜</text>
+            <!-- 肋骨の弧 -->
+            <path d="M84,74 Q170,52 262,70" fill="none" stroke="#C9A86A" stroke-width="5" stroke-linecap="round"/>
+            <path d="M80,116 Q170,94 272,110" fill="none" stroke="#C9A86A" stroke-width="5" stroke-linecap="round"/>
+            <path d="M82,158 Q170,138 270,150" fill="none" stroke="#C9A86A" stroke-width="5" stroke-linecap="round"/>
+            <!-- 空気だまり -->
+            <g id="airPocket">
+              <ellipse cx="212" cy="86" rx="82" ry="46" fill="#BDEBFF"/>
+              <circle class="airb" cx="180" cy="70" r="6" fill="#fff"/>
+              <circle class="airb" cx="228" cy="98" r="4.5" fill="#fff"/>
+              <circle class="airb" cx="248" cy="62" r="5" fill="#fff"/>
+              <text x="196" y="42" font-size="12" fill="#0F7E8C">空気</text>
+            </g>
+            <!-- 胸水 -->
+            <path id="fluidPool" d="" fill="#57B7E8" opacity="0.85"/>
+            <text id="fluidLabel" x="196" y="196" font-size="12" fill="#fff" style="display:none">胸水</text>
+            <!-- 肺（JSで描画） -->
+            <path id="lungPath" d="" fill="#FF9D9D" stroke="#E05B5B" stroke-width="3"/>
+            <text id="lungLabel" x="150" y="140" font-size="12">肺</text>
+            <!-- ドレーン: 気胸用 -->
+            <g id="drainAir" style="display:none">
+              <path d="M212,80 L262,106 L338,124" fill="none" stroke="#0F7E8C" stroke-width="9" stroke-linecap="round"/>
+              <path d="M212,80 L262,106 L338,124" fill="none" stroke="#7FD1DE" stroke-width="3.5" stroke-linecap="round"/>
+              <path id="tubeAirPath" d="M212,80 L262,106 L338,124 L338,296" fill="none" stroke="none"/>
+            </g>
+            <!-- ドレーン: 胸水用 -->
+            <g id="drainFluid" style="display:none">
+              <path d="M228,224 L272,178 L338,168" fill="none" stroke="#0F7E8C" stroke-width="9" stroke-linecap="round"/>
+              <path d="M228,224 L272,178 L338,168" fill="none" stroke="#7FD1DE" stroke-width="3.5" stroke-linecap="round"/>
+              <path id="tubeFluidPath" d="M228,224 L272,178 L338,168 L338,296" fill="none" stroke="none"/>
+            </g>
+            <g id="flowDots"></g>
+            <text x="238" y="290" font-size="11">ドレーン</text>
+          </svg>
+        </div>
+        <div style="flex:1">
+          <svg id="bottleSvg" viewBox="0 0 210 252" role="img" aria-label="ドレナージユニット">
+            <path d="M45,2 L45,44" stroke="#0F7E8C" stroke-width="7" stroke-linecap="round"/>
+            <rect x="14" y="42" width="182" height="168" rx="12" fill="#fff" stroke="#3B332E" stroke-width="3"/>
+            <line x1="75" y1="42" x2="75" y2="210" stroke="#3B332E" stroke-width="2"/>
+            <line x1="136" y1="42" x2="136" y2="210" stroke="#3B332E" stroke-width="2"/>
+            <!-- 排液 -->
+            <rect id="collectFluid" x="18" y="196" width="53" height="10" fill="#F2A65A"/>
+            <!-- 水封 -->
+            <rect x="97" y="58" width="17" height="140" rx="6" fill="#EAF7FF" stroke="#57B7E8" stroke-width="2"/>
+            <rect id="sealWater" x="99" y="140" width="13" height="56" fill="#57B7E8"/>
+            <g id="sealBubbles"></g>
+            <circle cx="105" cy="52" r="4" fill="#57B7E8"/>
+            <!-- 吸引圧制御 -->
+            <rect x="152" y="58" width="17" height="140" rx="6" fill="#EAF7FF" stroke="#57B7E8" stroke-width="2"/>
+            <rect x="154" y="104" width="13" height="94" fill="#A8DDF2"/>
+            <g id="suctionBubbles"></g>
+            <line x1="146" y1="104" x2="176" y2="104" stroke="#FF7A66" stroke-width="2.5"/>
+            <text x="163" y="92" font-size="10.5" fill="#E05B5B" text-anchor="middle">−20cmH2O</text>
+            <text x="26" y="228" font-size="11.5">排液</text>
+            <text x="88" y="228" font-size="11.5">水封</text>
+            <text x="128" y="244" font-size="11.5">吸引圧制御</text>
+            <text x="52" y="32" font-size="11.5">ドレナージユニット</text>
+          </svg>
+          <p class="small" id="bottleMsg" style="margin:6px 2px 0;">水封の水位は、呼吸に合わせて上下する（＝ドレーンが開通しているサイン）。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg" id="shikumiMsg">肺のまわり（胸腔）に空気がたまって、肺がしぼんでいる。これが気胸。</div>
+    <div class="controls">
+      <button class="btn" id="insertBtn">ドレーンを入れる</button>
+      <button class="btn sub" id="resetBtn">リセット</button>
+      <div class="spacer"></div>
+      <div class="seg" id="leakSeg">
+        <button data-leak="off" class="active blue">エアリークなし</button>
+        <button data-leak="on">エアリークあり</button>
+      </div>
+    </div>
+    <p class="small">水封（すいふう）＝水のふた。空気や液体は外へ出られるけど、外の空気は胸の中へ逆流できない仕組み。吸引圧の目安は −20cmH2O（医師の指示で設定）。</p>
+  </section>
+
+  <!-- ============ タブ2: ばしょ ============ -->
+  <section id="tab-basho" class="tab">
+    <div class="panel">
+      <div class="qhead">
+        <span class="qnum" id="bashoQnum">問題 1 / 3</span>
+        <span class="tag doc">術者</span>
+      </div>
+      <p class="qtext" id="bashoQ">気胸のドレーンを入れる場所はどこ？ 体の図をタップして答えてね。</p>
+      <svg id="torsoSvg" viewBox="0 0 360 430" role="img" aria-label="上半身の図">
+        <!-- 上げた腕（患者の左） -->
+        <path d="M286,128 Q330,96 322,38 Q320,20 306,22 Q292,24 292,44 Q292,86 268,112 Z" fill="#FFE0BD" stroke="#3B332E" stroke-width="3"/>
+        <!-- 体 -->
+        <path d="M104,118 Q180,92 256,118 Q286,130 288,190 L290,398 Q180,414 70,398 L72,190 Q74,130 104,118 Z"
+              fill="#D6ECFF" stroke="#3B332E" stroke-width="3"/>
+        <!-- 頭と首 -->
+        <rect x="162" y="76" width="36" height="30" fill="#FFE0BD" stroke="#3B332E" stroke-width="3"/>
+        <circle cx="180" cy="48" r="34" fill="#FFE0BD" stroke="#3B332E" stroke-width="3"/>
+        <path d="M152,40 Q180,18 208,40" fill="none" stroke="#8A6D4B" stroke-width="7" stroke-linecap="round"/>
+        <!-- 鎖骨 -->
+        <path d="M120,128 Q180,112 240,128" fill="none" stroke="#9DB8CC" stroke-width="3"/>
+        <!-- 乳頭（第5肋間の目安） -->
+        <circle cx="128" cy="243" r="5" fill="#E8A0A0"/>
+        <circle cx="232" cy="243" r="5" fill="#E8A0A0"/>
+        <!-- 安全三角オーバーレイ -->
+        <g id="safeTri" style="display:none">
+          <polygon points="296,122 258,244 334,244" fill="rgba(47,168,79,.30)" stroke="#2FA84F" stroke-width="3" stroke-dasharray="7 5"/>
+          <text x="204" y="200" font-size="11" fill="#2FA84F" text-anchor="middle">大胸筋のふち</text>
+          <text x="303" y="348" font-size="11" fill="#2FA84F" text-anchor="middle">広背筋のふち</text>
+          <text x="180" y="262" font-size="11" fill="#2FA84F" text-anchor="middle">第5肋間のライン</text>
+          <text x="298" y="110" font-size="11" fill="#2FA84F" text-anchor="middle">わきの下</text>
+        </g>
+        <!-- 緊急脱気ゾーン（第2肋間・鎖骨中線） -->
+        <circle class="zone" data-zone="front2" cx="214" cy="163" r="15"/>
+        <!-- 側胸部のグリッド -->
+        <g id="zoneGrid"></g>
+        <text x="243" y="140" font-size="11">前</text>
+        <text x="277" y="140" font-size="11">中</text>
+        <text x="311" y="140" font-size="11">後</text>
+        <text x="196" y="436" font-size="0">.</text>
+      </svg>
+      <div class="controls">
+        <button class="btn sub" id="triBtn">安全三角をみる</button>
+        <div class="spacer"></div>
+        <button class="btn" id="bashoNext" style="display:none">つぎの問題へ</button>
+      </div>
+      <div class="msg" id="bashoMsg">側胸部のマスは、上から第2・3・4・5・6・7肋間。前＝前腋窩線、中＝中腋窩線、後＝後腋窩線だよ。</div>
+      <div class="score" id="bashoScore" style="display:none"></div>
+      <div class="center"><button class="btn sub" id="bashoRetry" style="display:none">もう一度</button></div>
+    </div>
+
+    <div class="panel">
+      <h2>肋骨のそばは、あぶない場所がある</h2>
+      <svg viewBox="0 0 360 216" role="img" aria-label="肋骨と神経血管束の断面">
+        <rect x="56" y="26" width="248" height="30" rx="14" fill="#FFF1D6" stroke="#C9A86A" stroke-width="3"/>
+        <text x="8" y="46" font-size="11.5">上の肋骨</text>
+        <!-- 神経血管束 -->
+        <circle cx="168" cy="68" r="7" fill="#57B7E8"/>
+        <circle cx="188" cy="68" r="7" fill="#FF6B5E"/>
+        <circle cx="208" cy="68" r="7" fill="#FFC53D"/>
+        <text x="224" y="66" font-size="11.5">神経・動脈・静脈は</text>
+        <text x="224" y="82" font-size="11.5">肋骨の「下側」を通る</text>
+        <!-- NG矢印 -->
+        <path d="M336,20 L216,52" stroke="#FF6B5E" stroke-width="4" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+        <text x="292" y="16" font-size="12" fill="#E05B5B">✕ あぶない</text>
+        <!-- OK矢印 -->
+        <path d="M332,100 Q270,116 208,112" fill="none" stroke="#2FA84F" stroke-width="5" marker-end="url(#arrowGreen)"/>
+        <text x="8" y="104" font-size="12" fill="#2FA84F">○ 下の肋骨の「上側」に沿って</text>
+        <rect x="56" y="124" width="248" height="30" rx="14" fill="#FFF1D6" stroke="#C9A86A" stroke-width="3"/>
+        <text x="8" y="144" font-size="11.5">下の肋骨</text>
+        <text x="56" y="182" font-size="12">肋骨の下側を傷つけると、肋間動脈損傷で</text>
+        <text x="56" y="200" font-size="12">大出血のおそれ。だから「上側」が鉄則。</text>
+        <defs>
+          <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#FF6B5E"/></marker>
+          <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2FA84F"/></marker>
+        </defs>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ タブ3: てじゅん ============ -->
+  <section id="tab-tejun" class="tab">
+    <div class="panel">
+      <div class="qhead">
+        <span class="qnum" id="stepNum">ステップ 1 / 11</span>
+        <span class="tag">介助の流れ</span>
+      </div>
+      <p class="qtext" id="stepTitle">体位をとる</p>
+      <svg id="stepSvg" viewBox="0 0 360 300" role="img" aria-label="処置中の体の図">
+        <!-- ベッド -->
+        <path d="M30,238 L210,238 L268,168" fill="none" stroke="#9DB8CC" stroke-width="10" stroke-linecap="round"/>
+        <rect x="24" y="246" width="300" height="10" rx="5" fill="#B9CFE0"/>
+        <!-- 体（半座位） -->
+        <path d="M96,232 Q120,150 196,96 Q214,84 228,98 Q240,110 230,132 Q196,196 168,226 Q130,246 96,232 Z"
+              fill="#D6ECFF" stroke="#3B332E" stroke-width="3"/>
+        <!-- 頭 -->
+        <circle cx="98" cy="196" r="24" fill="#FFE0BD" stroke="#3B332E" stroke-width="3" transform="rotate(-38 98 196)"/>
+        <!-- 上げた腕 -->
+        <path d="M214,104 Q262,74 292,84 Q306,90 300,104 Q294,116 276,112 Q244,106 224,120 Z" fill="#FFE0BD" stroke="#3B332E" stroke-width="3"/>
+        <!-- 肋骨の弧 -->
+        <path d="M168,150 Q206,138 236,146" fill="none" stroke="#C9A86A" stroke-width="4" stroke-linecap="round"/>
+        <path d="M158,176 Q198,164 230,170" fill="none" stroke="#C9A86A" stroke-width="4" stroke-linecap="round"/>
+        <!-- 挿入部マーカー -->
+        <circle cx="222" cy="158" r="5" fill="#FF7A66"/>
+        <g id="ov1">
+          <path d="M268,168 A64,64 0 0 0 210,238" fill="none" stroke="#FFC53D" stroke-width="3" stroke-dasharray="5 4"/>
+          <text x="252" y="216" font-size="12.5">45°くらい起こす</text>
+          <text x="238" y="66" font-size="12.5">腕は頭の後ろへ</text>
+        </g>
+        <g id="ov2" style="display:none">
+          <polygon points="238,116 214,168 252,172" fill="rgba(47,168,79,.30)" stroke="#2FA84F" stroke-width="2.5" stroke-dasharray="6 4"/>
+          <circle cx="222" cy="158" r="9" fill="none" stroke="#2FA84F" stroke-width="3"/>
+          <text x="238" y="106" font-size="12.5" fill="#2FA84F">安全三角の中</text>
+          <text x="120" y="140" font-size="12.5">第4〜5肋間を数える</text>
+        </g>
+        <g id="ov3" style="display:none">
+          <circle cx="222" cy="158" r="27" fill="rgba(214,130,40,.35)"/>
+          <circle cx="222" cy="158" r="27" fill="none" stroke="#D68228" stroke-width="2.5"/>
+          <text x="238" y="130" font-size="12.5">広く消毒</text>
+        </g>
+        <g id="ov4" style="display:none">
+          <g transform="rotate(-32 262 128)">
+            <rect x="252" y="118" width="46" height="13" rx="6" fill="#fff" stroke="#3B332E" stroke-width="2.5"/>
+            <rect x="290" y="121" width="14" height="7" fill="#57B7E8"/>
+            <path d="M252,124 L228,124" stroke="#3B332E" stroke-width="2.5"/>
+          </g>
+          <text x="240" y="100" font-size="12.5">注射で麻酔</text>
+          <text x="96" y="120" font-size="12">肋骨の上縁に沿って</text>
+        </g>
+        <g id="ov5" style="display:none">
+          <path d="M206,150 L238,166" stroke="#FF6B5E" stroke-width="4" stroke-linecap="round"/>
+          <path d="M252,138 L240,158 L258,156 Z" fill="#C0C8CE" stroke="#3B332E" stroke-width="2"/>
+          <text x="246" y="130" font-size="12.5">2cmほど切開</text>
+        </g>
+        <g id="ov6" style="display:none">
+          <path d="M252,132 L228,152" stroke="#3B332E" stroke-width="4" stroke-linecap="round"/>
+          <path d="M258,160 L230,162" stroke="#3B332E" stroke-width="4" stroke-linecap="round"/>
+          <text x="246" y="118" font-size="12.5">鉗子で分けて広げる</text>
+        </g>
+        <g id="ov7" style="display:none">
+          <rect x="216" y="128" width="15" height="38" rx="7" fill="#FFE0BD" stroke="#3B332E" stroke-width="2.5" transform="rotate(38 222 158)"/>
+          <text x="238" y="112" font-size="12.5">指を入れて確認</text>
+          <text x="86" y="140" font-size="12">肺の癒着・臓器がないか</text>
+        </g>
+        <g id="ov8" style="display:none">
+          <path d="M196,116 L224,146 L300,140" fill="none" stroke="#0F7E8C" stroke-width="9" stroke-linecap="round"/>
+          <path d="M196,116 L224,146 L300,140" fill="none" stroke="#7FD1DE" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M196,116 L186,100" stroke="#2FA84F" stroke-width="3" marker-end="url(#arrowGreen2)"/>
+          <text x="128" y="96" font-size="12" fill="#2FA84F">空気は上へ</text>
+          <text x="238" y="182" font-size="12">液体は下へ向ける</text>
+          <defs><marker id="arrowGreen2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2FA84F"/></marker></defs>
+        </g>
+        <g id="ov9" style="display:none">
+          <path d="M196,116 L224,146 L300,140" fill="none" stroke="#0F7E8C" stroke-width="9" stroke-linecap="round"/>
+          <path d="M196,116 L224,146 L300,140" fill="none" stroke="#7FD1DE" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M210,140 l8,10 l-8,10 l8,10" fill="none" stroke="#FF7A66" stroke-width="3"/>
+          <rect x="238" y="128" width="30" height="20" rx="3" fill="#FFF3D6" stroke="#C9A86A" stroke-width="2" transform="rotate(8 253 138)"/>
+          <text x="252" y="118" font-size="12.5">糸とテープで固定</text>
+        </g>
+        <g id="ov10" style="display:none">
+          <path d="M196,116 L224,146 L286,150 L292,206" fill="none" stroke="#0F7E8C" stroke-width="9" stroke-linecap="round"/>
+          <path d="M196,116 L224,146 L286,150 L292,206" fill="none" stroke="#7FD1DE" stroke-width="3.5" stroke-linecap="round"/>
+          <rect x="262" y="206" width="62" height="52" rx="7" fill="#fff" stroke="#3B332E" stroke-width="2.5"/>
+          <line x1="283" y1="206" x2="283" y2="258" stroke="#3B332E" stroke-width="1.5"/>
+          <line x1="304" y1="206" x2="304" y2="258" stroke="#3B332E" stroke-width="1.5"/>
+          <text x="293" y="282" font-size="12" text-anchor="middle">胸より低い位置に置く</text>
+        </g>
+        <g id="ov11" style="display:none">
+          <rect x="238" y="52" width="106" height="128" rx="8" fill="#2E3A46"/>
+          <path d="M262,150 Q286,84 322,76 Q334,110 326,150 Q292,164 262,150 Z" fill="none" stroke="#DFF3FF" stroke-width="2.5"/>
+          <path d="M318,84 L306,128 L292,168" fill="none" stroke="#fff" stroke-width="4"/>
+          <text x="236" y="196" font-size="11">位置と肺の膨らみを確認</text>
+        </g>
+      </svg>
+      <div class="bubble op"><span class="who">術者</span><p id="stepOp"></p></div>
+      <div class="bubble as"><span class="who">介助</span><p id="stepAs"></p></div>
+      <div class="dots" id="stepDots"></div>
+      <div class="controls">
+        <button class="btn sub" id="stepPrev">もどる</button>
+        <div class="spacer"></div>
+        <button class="btn" id="stepNext">つぎへ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ タブ4: かんさつクイズ ============ -->
+  <section id="tab-quiz" class="tab">
+    <div class="panel" id="quizPanel">
+      <div class="qhead">
+        <span class="qnum" id="quizNum">問題 1 / 5</span>
+        <span class="tag nurse" id="quizTag">かんさつ（看護師）</span>
+      </div>
+      <p class="qtext" id="quizQ"></p>
+      <div class="choices" id="quizChoices"></div>
+      <div class="msg" id="quizMsg" style="margin-top:12px; display:none"></div>
+      <div class="controls">
+        <div class="spacer"></div>
+        <button class="btn" id="quizNext" style="display:none">つぎの問題へ</button>
+      </div>
+    </div>
+    <div class="panel center" id="quizResult" style="display:none">
+      <div class="score" id="quizScore"></div>
+      <p id="quizScoreMsg" style="font-weight:700;"></p>
+      <button class="btn" id="quizRetry">もう一度</button>
+    </div>
+  </section>
+
+  <footer>内容は公開されているガイドライン等（BTS胸膜疾患ガイドライン、MSDマニュアル、StatPearlsほか）をもとにした学習用アプリです。実際の処置は施設の手順と医師の指示に従ってください。</footer>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ---------- タブ切替 ---------- */
+$$("nav.tabs button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    $$("nav.tabs button").forEach(x=>x.classList.toggle("active", x===b));
+    $$("section.tab").forEach(x=>x.classList.toggle("active", x.id==="tab-"+b.dataset.tab));
+  });
+});
+
+/* ---------- タブ1: しくみ ---------- */
+const lungE = [[128,96],[168,52],[232,44],[272,74],[282,128],[276,188],[238,232],[182,240],[140,206],[124,152]];
+const lungC = [[130,104],[150,84],[178,80],[196,98],[200,132],[192,164],[168,182],[144,178],[128,142],[124,120]];
+const lungF = [[128,92],[168,50],[232,42],[272,70],[280,120],[272,168],[236,196],[184,200],[142,176],[124,140]];
+function smoothPath(pts){
+  const n = pts.length;
+  const mid = (a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  let d = `M ${mid(pts[n-1],pts[0])[0]},${mid(pts[n-1],pts[0])[1]}`;
+  for(let i=0;i<n;i++){
+    const m = mid(pts[i], pts[(i+1)%n]);
+    d += ` Q ${pts[i][0]},${pts[i][1]} ${m[0]},${m[1]}`;
+  }
+  return d + " Z";
+}
+const lerpPts = (a,b,t)=>a.map((p,i)=>[p[0]+(b[i][0]-p[0])*t, p[1]+(b[i][1]-p[1])*t]);
+
+let mode = "air";           // air | fluid
+let speedMul = 1;
+let prog = 0, progTarget = 0;   // ドレーン進行度 0..1
+let leakOn = false;
+let startT = performance.now();
+
+const lungPath = $("#lungPath"), airPocket = $("#airPocket"),
+      fluidPool = $("#fluidPool"), fluidLabel = $("#fluidLabel"),
+      drainAir = $("#drainAir"), drainFluid = $("#drainFluid"),
+      flowDots = $("#flowDots"), sealWater = $("#sealWater"),
+      sealBubbles = $("#sealBubbles"), suctionBubbles = $("#suctionBubbles"),
+      collectFluid = $("#collectFluid"),
+      shikumiMsg = $("#shikumiMsg"), bottleMsg = $("#bottleMsg");
+
+function makeDots(group, n, color, r){
+  const arr = [];
+  for(let i=0;i<n;i++){
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("fill", color); c.setAttribute("r", r); c.setAttribute("opacity","0");
+    group.appendChild(c); arr.push(c);
+  }
+  return arr;
+}
+const chestDots = makeDots(flowDots, 4, "#ffffff", 4.5);
+const sealDots  = makeDots(sealBubbles, 4, "#ffffff", 3.2);
+const sucDots   = makeDots(suctionBubbles, 3, "#ffffff", 2.6);
+
+function fluidPath(h){
+  if(h <= 1) return "";
+  const top = 214 - h;
+  return `M78,${top} Q130,${top-6} 180,${top} Q230,${top+6} 272,${top} L272,214 Q190,232 84,212 Z`;
+}
+function setMsg(){
+  if(leakOn){
+    shikumiMsg.textContent = "水封で泡がずっと出続けている＝エアリーク（空気の漏れ）が続いているサイン。";
+    bottleMsg.textContent = "水封の泡が続く＝エアリーク。接続部や挿入部を確認して、医師へ報告。";
+    return;
+  }
+  if(prog < 0.05){
+    shikumiMsg.textContent = mode==="air"
+      ? "肺のまわり（胸腔）に空気がたまって、肺がしぼんでいる。これが気胸。"
+      : "肺の下に水（胸水）がたまって、肺が押し上げられている。";
+    bottleMsg.textContent = "水封の水位は、呼吸に合わせて上下する（＝ドレーンが開通しているサイン）。";
+  } else if(prog < 0.98){
+    shikumiMsg.textContent = mode==="air"
+      ? "ドレーンから空気が抜けて、肺が膨らんできている。"
+      : "ドレーンから胸水が出て、肺が膨らんできている。";
+    bottleMsg.textContent = "水封の水位は、呼吸に合わせて上下する（＝ドレーンが開通しているサイン）。";
+  } else {
+    shikumiMsg.textContent = mode==="air"
+      ? "空気が抜けて、肺がしっかり膨らんだ。"
+      : "胸水が抜けて、肺がしっかり膨らんだ。";
+    bottleMsg.textContent = "水封の水位は、呼吸に合わせて上下する（＝ドレーンが開通しているサイン）。";
+  }
+}
+let msgKey = "";
+function frame(now){
+  const t = (now - startT)/1000;
+  const band = prog < 0.05 ? 0 : (prog < 0.98 ? 1 : 2);
+  const key = mode + "|" + band + "|" + leakOn;
+  if(key !== msgKey){ msgKey = key; setMsg(); }
+  // 進行度を目標へ近づける（速度切替を反映）
+  const rate = 0.28 * speedMul;
+  if(prog < progTarget) prog = Math.min(progTarget, prog + rate/60);
+  if(prog > progTarget) prog = Math.max(progTarget, prog - rate*2.2/60);
+  const breath = Math.sin(t * 2.1 * speedMul);       // 呼吸
+  const ease = prog*prog*(3-2*prog);
+
+  // 肺
+  let pts;
+  if(mode==="air"){
+    pts = lerpPts(lungC, lungE, ease);
+    airPocket.setAttribute("transform", `translate(212,86) scale(${1-ease*0.94}) translate(-212,-86)`);
+    airPocket.style.opacity = ease > 0.97 ? 0 : 1;
+    fluidPool.setAttribute("d","");
+    fluidLabel.style.display = "none";
+  } else {
+    pts = lerpPts(lungF, lungE, ease);
+    airPocket.style.opacity = 0;
+    const h = (1-ease) * 74;
+    fluidPool.setAttribute("d", fluidPath(h));
+    fluidLabel.style.display = h > 26 ? "block" : "none";
+  }
+  const bb = 1 + breath*0.012;
+  pts = pts.map(p=>[128+(p[0]-128)*bb, 140+(p[1]-140)*bb]);
+  lungPath.setAttribute("d", smoothPath(pts));
+  $("#lungLabel").setAttribute("x", pts[3][0]-58);
+  $("#lungLabel").setAttribute("y", pts[3][1]+52);
+
+  // ドレーン表示
+  const showDrain = prog > 0.02;
+  drainAir.style.display  = (showDrain && mode==="air")  ? "block" : "none";
+  drainFluid.style.display= (showDrain && mode==="fluid")? "block" : "none";
+  const slide = (1 - Math.min(1, prog*3)) * 46;
+  const dg = mode==="air" ? drainAir : drainFluid;
+  dg.setAttribute("transform", `translate(${slide},0)`);
+
+  // 流れる粒（空気の泡／水の粒）
+  const draining = prog > 0.03 && prog < 0.995;
+  const tube = mode==="air" ? $("#tubeAirPath") : $("#tubeFluidPath");
+  const L = tube.getTotalLength();
+  chestDots.forEach((c,i)=>{
+    if(!draining){ c.setAttribute("opacity","0"); return; }
+    const s = ((t*0.35*speedMul + i/4) % 1);
+    const p = tube.getPointAtLength(s*L);
+    c.setAttribute("cx", p.x + slide); c.setAttribute("cy", p.y);
+    c.setAttribute("fill", mode==="air" ? "#ffffff" : "#1B7FB8");
+    c.setAttribute("opacity", s>0.96 ? 0 : 0.95);
+  });
+
+  // 水封: 水位が呼吸で上下（tidaling）
+  const sealTop = 140 + breath*9;
+  sealWater.setAttribute("y", sealTop);
+  sealWater.setAttribute("height", 196 - sealTop);
+  // 水封の泡: 排気中 or エアリーク時
+  const bubbling = draining && mode==="air" || leakOn;
+  sealDots.forEach((c,i)=>{
+    if(!bubbling){ c.setAttribute("opacity","0"); return; }
+    const s = ((t*0.55*speedMul + i/4) % 1);
+    c.setAttribute("cx", 101.5 + (i%2)*6);
+    c.setAttribute("cy", 192 - s*44);
+    c.setAttribute("opacity", 0.9);
+  });
+  // 吸引圧制御: やさしい泡（吸引が効いているサイン）
+  sucDots.forEach((c,i)=>{
+    const s = ((t*0.3*speedMul + i/3) % 1);
+    c.setAttribute("cx", 158 + (i%2)*7);
+    c.setAttribute("cy", 192 - s*80);
+    c.setAttribute("opacity", 0.8);
+  });
+  // 排液ボトル: 胸水モードでたまる
+  const ch = mode==="fluid" ? 8 + ease*34 : 8 + ease*5;
+  collectFluid.setAttribute("y", 206 - ch);
+  collectFluid.setAttribute("height", ch);
+  collectFluid.setAttribute("fill", mode==="fluid" ? "#57B7E8" : "#F2A65A");
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+setMsg();
+
+$$("#modeSeg button").forEach(b=>b.addEventListener("click", ()=>{
+  $$("#modeSeg button").forEach(x=>x.classList.toggle("active", x===b));
+  mode = b.dataset.mode; prog = 0; progTarget = 0;
+  $("#insertBtn").disabled = false; setMsg();
+}));
+$$("#speedSeg button").forEach(b=>b.addEventListener("click", ()=>{
+  $$("#speedSeg button").forEach(x=>x.classList.toggle("active", x===b));
+  speedMul = parseFloat(b.dataset.speed);
+}));
+$$("#leakSeg button").forEach(b=>b.addEventListener("click", ()=>{
+  $$("#leakSeg button").forEach(x=>x.classList.toggle("active", x===b));
+  leakOn = b.dataset.leak === "on"; setMsg();
+}));
+$("#insertBtn").addEventListener("click", ()=>{
+  progTarget = 1; $("#insertBtn").disabled = true; setMsg();
+  setTimeout(setMsg, 600);
+});
+$("#resetBtn").addEventListener("click", ()=>{
+  progTarget = 0; $("#insertBtn").disabled = false; setMsg();
+});
+
+/* ---------- タブ2: ばしょ ---------- */
+(function(){
+  const grid = $("#zoneGrid");
+  const rows = [2,3,4,5,6,7], cols = [["mae",236],["naka",270],["ato",304]];
+  const NS = "http://www.w3.org/2000/svg";
+  rows.forEach((r,ri)=>{
+    cols.forEach(([name,x])=>{
+      const rect = document.createElementNS(NS,"rect");
+      rect.setAttribute("x", x); rect.setAttribute("y", 150 + ri*29);
+      rect.setAttribute("width", 32); rect.setAttribute("height", 27);
+      rect.setAttribute("rx", 6); rect.setAttribute("class","zone");
+      rect.dataset.zone = name + r;
+      grid.appendChild(rect);
+    });
+    const t = document.createElementNS(NS,"text");
+    t.setAttribute("x", 342); t.setAttribute("y", 168 + ri*29);
+    t.setAttribute("font-size","11"); t.textContent = r;
+    grid.appendChild(t);
+  });
+
+  const questions = [
+    { text:"気胸のドレーンを入れる場所はどこ？ 体の図をタップして答えてね。",
+      correct:["mae4","naka4","mae5","naka5"],
+      ok:"そのとおり。安全三角の中の第4〜5肋間。大きな筋肉や太い血管を避けられる場所だよ。",
+      reasons:{
+        high:"高すぎる。肺の先っぽ（肺尖）や、腕へ行く神経・血管を傷つけるおそれがある。",
+        low:"低すぎる。横隔膜や、その下の肝臓・脾臓を傷つけるおそれがある。",
+        back:"後ろすぎる。広背筋より後ろは肋間動脈が近く、傷つけると大出血のおそれ。",
+        front2:"そこは緊急脱気で針を刺す場所（第2肋間・鎖骨中線）。ドレーンを入れる場所とは違うよ。"
+      },
+      judge(z){
+        if(z==="front2") return "front2";
+        const row = +z.slice(-1), col = z.slice(0,-1);
+        if(row<=3) return "high";
+        if(row>=6) return "low";
+        if(col==="ato") return "back";
+        return "low";
+      }},
+    { text:"緊張性気胸！ まず緊急脱気（針で空気を抜く）をする場所はどこ？",
+      correct:["front2"],
+      ok:"正解。第2肋間・鎖骨中線。緊張性気胸は待てないので、まず太い針で空気を抜く。あとで必ずドレーンに切り替えるよ。",
+      reasons:{
+        drain:"そこはドレーンを入れる場所（安全三角）としては正しい。でも緊急脱気の針は、まず第2肋間・鎖骨中線と覚えよう。",
+        low:"低すぎる。横隔膜や腹腔の臓器を傷つけるおそれ。緊急時ほど場所の確認が大事。",
+        high:"鎖骨中線の第2肋間が目安。胸の前面、鎖骨の下あたりだよ。"
+      },
+      judge(z){
+        const row = +z.slice(-1), col = z.slice(0,-1);
+        if((row===4||row===5) && col!=="ato") return "drain";
+        if(row>=6) return "low";
+        return "high";
+      }},
+    { text:"胸水のドレーンを入れる場所はどこ？（水は下にたまる）",
+      correct:["naka6","ato6","naka7","ato7"],
+      ok:"そのとおり。液体は下と後ろにたまるので、第6〜7肋間の中〜後ろ寄り。ドレーンの先は肺の下側へ向ける。",
+      reasons:{
+        high:"高すぎると液体が抜けきらない。胸水は下にたまるよ。",
+        front:"前すぎる。液体は後ろにたまるので、中腋窩線〜後腋窩線寄りがよい。",
+        front2:"そこは緊急脱気の場所。胸水のドレーンではないよ。"
+      },
+      judge(z){
+        if(z==="front2") return "front2";
+        const row = +z.slice(-1), col = z.slice(0,-1);
+        if(row<=5) return "high";
+        if(col==="mae") return "front";
+        return "high";
+      }}
+  ];
+  let qi = 0, score = 0, answered = false;
+  const qEl = $("#bashoQ"), numEl = $("#bashoQnum"), msgEl = $("#bashoMsg"),
+        nextBtn = $("#bashoNext"), scoreEl = $("#bashoScore"), retryBtn = $("#bashoRetry");
+
+  function clearZones(){
+    $$("#torsoSvg .zone").forEach(z=>z.classList.remove("correct","wrong","pulse"));
+  }
+  function loadQ(){
+    answered = false; clearZones();
+    numEl.textContent = `問題 ${qi+1} / 3`;
+    qEl.textContent = questions[qi].text;
+    msgEl.className = "msg";
+    msgEl.textContent = qi===0
+      ? "側胸部のマスは、上から第2・3・4・5・6・7肋間。前＝前腋窩線、中＝中腋窩線、後＝後腋窩線だよ。"
+      : "体の図をタップして答えてね。";
+    nextBtn.style.display = "none";
+    scoreEl.style.display = "none"; retryBtn.style.display = "none";
+  }
+  $$("#torsoSvg .zone").forEach(z=>{
+    z.addEventListener("click", ()=>{
+      if(answered) return;
+      answered = true;
+      const q = questions[qi], id = z.dataset.zone;
+      if(q.correct.includes(id)){
+        score++;
+        z.classList.add("correct");
+        msgEl.className = "msg good"; msgEl.textContent = "○ " + q.ok;
+      } else {
+        z.classList.add("wrong");
+        q.correct.forEach(cid=>{
+          const el = document.querySelector(`#torsoSvg .zone[data-zone="${cid}"]`);
+          if(el) el.classList.add("correct","pulse");
+        });
+        msgEl.className = "msg bad";
+        msgEl.textContent = "× " + (q.reasons[q.judge(id)] || "");
+      }
+      if(qi < 2){ nextBtn.textContent = "つぎの問題へ"; }
+      else { nextBtn.textContent = "結果をみる"; }
+      nextBtn.style.display = "inline-block";
+    });
+  });
+  nextBtn.addEventListener("click", ()=>{
+    if(qi < 2){ qi++; loadQ(); }
+    else {
+      numEl.textContent = "結果";
+      qEl.textContent = "おつかれさま！";
+      scoreEl.style.display = "block";
+      scoreEl.textContent = `3問中 ${score}問正解`;
+      msgEl.className = "msg";
+      msgEl.textContent = score===3
+        ? "ばっちり。場所の決め手は「安全三角」と「出すもの（空気か液体か）」だよ。"
+        : "間違えた場所は、理由を読み直してもう一度やってみよう。";
+      nextBtn.style.display = "none"; retryBtn.style.display = "inline-block";
+      clearZones();
+    }
+  });
+  retryBtn.addEventListener("click", ()=>{ qi = 0; score = 0; loadQ(); });
+  $("#triBtn").addEventListener("click", ()=>{
+    const g = $("#safeTri");
+    const on = g.style.display !== "none";
+    g.style.display = on ? "none" : "block";
+    $("#triBtn").textContent = on ? "安全三角をみる" : "安全三角をかくす";
+    if(!answered){
+      msgEl.className = "msg";
+      msgEl.textContent = on
+        ? "体の図をタップして答えてね。"
+        : "安全三角：前は大胸筋の外側のふち、後ろは広背筋の前側のふち、下は第5肋間のライン、頂点はわきの下。";
+    }
+  });
+  loadQ();
+})();
+
+/* ---------- タブ3: てじゅん ---------- */
+(function(){
+  const steps = [
+    { t:"体位をとる", ov:1,
+      op:"ベッドを45°くらい起こして、患側の腕を頭の後ろへ。わきを広く出す。",
+      as:"体位を一緒に支える。点滴ルートやモニターのコードが引っ張られないか確認。" },
+    { t:"部位を確認する", ov:2,
+      op:"安全三角の中で第4〜5肋間を触って数える。左右と場所を声に出して確認。",
+      as:"X線画像と同じ側か、術者とダブルチェック。消毒の前に患者さんへ声かけ。" },
+    { t:"消毒する", ov:3,
+      op:"挿入部を中心に広く消毒して、清潔な覆い布（ドレープ）をかける。",
+      as:"消毒薬とドレープを清潔操作で渡す。患者さんに「冷たいですよ」と声かけ。" },
+    { t:"局所麻酔をする", ov:4,
+      op:"皮膚から肋骨の上縁に沿って、胸膜（肺の外側の膜）までしっかり麻酔する。",
+      as:"麻酔薬の名前と濃度を復唱して渡す。患者さんの痛みの訴えに注意する。" },
+    { t:"切開する", ov:5,
+      op:"肋骨に沿って2cmほど切開する。",
+      as:"メスはトレーに置いて渡す。受け取った器械は置き場所を決めておく。" },
+    { t:"鈍的剥離（どんてきはくり）", ov:6,
+      op:"鉗子で肋骨の上縁に沿って筋肉を分け、胸膜をやぶる。神経・血管は肋骨の下縁にあるので避ける。",
+      as:"鉗子を渡す。出血がないか、患者さんの表情と一緒に見る。" },
+    { t:"胸腔を確認する", ov:7,
+      op:"指を入れて胸腔の中を確認。肺が癒着していないか、臓器がないか触って確かめる。",
+      as:"術者の手の動きを妨げない位置で待機。SpO2と呼吸状態をモニターで確認。" },
+    { t:"ドレーンを入れる", ov:8,
+      op:"ドレーンを入れる。先端は、空気なら上（肺尖）、液体なら下（肺底）へ向ける。",
+      as:"ドレーンの太さ（Fr）を確認して渡す。空気や排液が出てきたら術者に伝える。" },
+    { t:"固定する", ov:9,
+      op:"糸でしっかり固定して、ドレーンが抜けないようにする。",
+      as:"針と糸、はさみを順に渡す。固定テープとガーゼを用意する。" },
+    { t:"ドレナージユニットにつなぐ", ov:10,
+      op:"ユニットにつないで、水封と吸引圧（−20cmH2Oが目安）を確認する。",
+      as:"ユニットは患者さんの胸より低い位置に置く。接続部が外れていないか声かけ確認。" },
+    { t:"X線で確認する", ov:11,
+      op:"胸部X線で、ドレーンの位置と肺の膨らみを確認する。",
+      as:"撮影の声かけと体位の介助。呼吸状態と痛みを聞いて記録する。" }
+  ];
+  let si = 0;
+  const dotsBox = $("#stepDots");
+  steps.forEach(()=>{ const i = document.createElement("i"); dotsBox.appendChild(i); });
+  function show(){
+    const s = steps[si];
+    $("#stepNum").textContent = `ステップ ${si+1} / ${steps.length}`;
+    $("#stepTitle").textContent = s.t;
+    $("#stepOp").textContent = s.op;
+    $("#stepAs").textContent = s.as;
+    for(let k=1;k<=11;k++){
+      const g = $("#ov"+k);
+      if(g) g.style.display = (k===s.ov) ? "block" : "none";
+    }
+    Array.from(dotsBox.children).forEach((d,i)=>{
+      d.className = i<si ? "done" : (i===si ? "now" : "");
+    });
+    $("#stepPrev").disabled = si===0;
+    $("#stepNext").textContent = si===steps.length-1 ? "最初にもどる" : "つぎへ";
+  }
+  $("#stepPrev").addEventListener("click", ()=>{ if(si>0){ si--; show(); }});
+  $("#stepNext").addEventListener("click", ()=>{
+    si = si===steps.length-1 ? 0 : si+1; show();
+  });
+  show();
+})();
+
+/* ---------- タブ4: かんさつクイズ ---------- */
+(function(){
+  const quiz = [
+    { tag:"かんさつ（看護師）", cls:"nurse",
+      q:"水封ボトルの水位が、呼吸に合わせて上下していたのに急に動かなくなった。まず確認するのは？",
+      c:["ドレーンの屈曲（折れ）や閉塞がないか","吸引圧をもっと強くする","患者さんを座らせる","次の検温まで様子を見る"], a:0,
+      e:"水位の上下（呼吸性変動）が止まるのは、ドレーンの詰まり・屈曲か、肺が完全に膨らんだサイン。まずチューブの状態を確認して、医師へ報告します。" },
+    { tag:"かんさつ（看護師）", cls:"nurse",
+      q:"水封室で気泡がずっと出続けている。これは何のサイン？",
+      c:["正常な呼吸性変動","エアリーク（空気の漏れが続いている）","吸引が強すぎる合図","水封の水が多すぎる合図"], a:1,
+      e:"持続する気泡はエアリーク。肺からの漏れか、接続部のゆるみを疑います。接続部と挿入部を確認して医師へ報告。呼吸に合わせた水位の上下は正常です。" },
+    { tag:"かんさつ（看護師）", cls:"nurse",
+      q:"排液が急に増えて、真っ赤な鮮血になった。どうする？",
+      c:["次の検温まで様子を見る","ドレーンをクランプ（閉じる）する","すぐに医師へ報告する","バッグを新しいものに交換する"], a:2,
+      e:"急な増量や鮮血は出血のサイン。バイタルサインを確認しながら直ちに医師へ報告します。ドレーンを勝手にクランプすると緊張性気胸になるおそれがあり危険です。" },
+    { tag:"術者の判断", cls:"doc",
+      q:"挿入部の周りが腫れて、触ると「パリパリ」する（皮下気腫）。エアリークも続いている。術者としてまず確認するのは？",
+      c:["吸引圧を最大にする","ドレーンをすぐ抜く","抗菌薬を開始する","ドレーンの側孔（横の穴）が胸腔の外に出ていないか、位置を確認する"], a:3,
+      e:"側孔が皮下に出ていると、空気が皮下に漏れて皮下気腫になり、リークも止まりません。X線で位置を確認し、必要なら入れ替えを判断します。" },
+    { tag:"術者・看護師 共通", cls:"doc",
+      q:"ドレーン留置中の患者さんが急に強い呼吸困難。首の静脈が張り、血圧が下がってきた。疑うのは？",
+      c:["緊張性気胸","痛みによる過換気","睡眠不足","麻酔が切れてきた"], a:0,
+      e:"緊張性気胸のサインです（呼吸困難・頸静脈怒張・血圧低下・気管の偏位）。ドレーンの閉塞も確認しつつ、直ちに応援を呼んで医師へ。緊急脱気の準備をします。" }
+  ];
+  let idx = 0, score = 0, answered = false;
+  const qEl = $("#quizQ"), cEl = $("#quizChoices"), mEl = $("#quizMsg"),
+        nEl = $("#quizNum"), tagEl = $("#quizTag"), nextBtn = $("#quizNext");
+  function load(){
+    answered = false;
+    const item = quiz[idx];
+    nEl.textContent = `問題 ${idx+1} / ${quiz.length}`;
+    tagEl.textContent = item.tag; tagEl.className = "tag " + item.cls;
+    qEl.textContent = item.q;
+    mEl.style.display = "none"; nextBtn.style.display = "none";
+    cEl.innerHTML = "";
+    item.c.forEach((c,i)=>{
+      const b = document.createElement("button");
+      b.textContent = c;
+      b.addEventListener("click", ()=>{
+        if(answered) return; answered = true;
+        Array.from(cEl.children).forEach((x,j)=>{
+          x.disabled = true;
+          if(j===item.a) x.classList.add("correct");
+        });
+        if(i===item.a){ score++; mEl.className = "msg good"; mEl.textContent = "○ 正解！ " + item.e; }
+        else { b.classList.add("wrong"); mEl.className = "msg bad"; mEl.textContent = "× 残念。 " + item.e; }
+        mEl.style.display = "flex";
+        nextBtn.textContent = idx===quiz.length-1 ? "結果をみる" : "つぎの問題へ";
+        nextBtn.style.display = "inline-block";
+      });
+      cEl.appendChild(b);
+    });
+  }
+  nextBtn.addEventListener("click", ()=>{
+    if(idx < quiz.length-1){ idx++; load(); }
+    else {
+      $("#quizPanel").style.display = "none";
+      $("#quizResult").style.display = "block";
+      $("#quizScore").textContent = `5問中 ${score}問正解`;
+      $("#quizScoreMsg").textContent =
+        score===5 ? "完璧！ 水封・エアリーク・排液・皮下気腫・緊張性気胸、全部つかめたね。" :
+        score>=3 ? "いい感じ。間違えた問題の解説を読み直すと、現場で迷わなくなるよ。" :
+                   "まずは水封の見方（水位の上下と気泡）から、もう一度まわしてみよう。";
+    }
+  });
+  $("#quizRetry").addEventListener("click", ()=>{
+    idx = 0; score = 0;
+    $("#quizResult").style.display = "none";
+    $("#quizPanel").style.display = "block";
+    load();
+  });
+  load();
+})();
+</script>
+</body>
+</html>
